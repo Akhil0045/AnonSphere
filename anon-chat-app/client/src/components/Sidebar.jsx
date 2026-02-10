@@ -4,6 +4,7 @@ import { useChatContext } from '../context/ChatContext';
 import { FaHashtag, FaPlus, FaSignOutAlt, FaTimes, FaLock } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import SHA256 from 'crypto-js/sha256';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const { user, switchRoom, leaveRoom, joinRoom } = useUser();
@@ -25,7 +26,10 @@ const Sidebar = ({ isOpen, onClose }) => {
                 return;
             }
 
-            joinChatRoom(newRoom, user.nickname, isPrivate ? password : null, user.color);
+            // Hash password on client side so plain text isn't sent over network
+            const finalPassword = isPrivate ? SHA256(password).toString() : null;
+
+            joinChatRoom(newRoom, user.nickname, finalPassword, user.color);
             setNewRoom(''); // Reset
             setIsPrivate(false);
             setPassword('');

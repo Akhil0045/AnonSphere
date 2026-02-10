@@ -4,6 +4,7 @@ import { useChatContext } from '../context/ChatContext';
 import { useSocket } from '../context/SocketContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import SHA256 from 'crypto-js/sha256';
 import '../styles/JoinScreen.css';
 
 const JoinScreen = () => {
@@ -46,9 +47,12 @@ const JoinScreen = () => {
 
         const color = generateColor();
 
+        // Hash password on client side so plain text isn't sent over network
+        const finalPassword = isPrivate ? SHA256(password).toString() : null;
+
         // Pass details to ChatContext to initiate join. 
         // User state will be updated only upon 'join_success' event.
-        joinChatRoom(room, nickname, isPrivate ? password : null, color);
+        joinChatRoom(room, nickname, finalPassword, color);
 
     };
 

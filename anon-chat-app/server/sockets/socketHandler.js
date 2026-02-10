@@ -1,11 +1,13 @@
 const Message = require('../models/Message');
 const PrivateMessage = require('../models/PrivateMessage');
 const xss = require('xss');
+const bcrypt = require('bcryptjs');
+const { encrypt, decrypt } = require('../utils/encryption');
 
 // State tracking: { roomName: Set(nicknames) }
 const roomUsers = {};
 
-// Room Configuration: { roomName: { password: '...' } }
+// Room Configuration: { roomName: { password: 'hashed_password' } }
 const roomConfigs = {};
 
 // Track which rooms+nicknames a socket is in for cleanup: { socketId: [{ room, nickname }] }
@@ -29,7 +31,8 @@ module.exports = (io) => {
 
             // 1. Existing Private Room
             if (roomConfigs[room] && roomConfigs[room].password) {
-                if (roomConfigs[room].password !== password) {
+                const isMatch = await bcrypt.compare(password, roomConfigs[room].password);
+                if (!isMatch) {
                     socket.emit('join_error', { message: 'Incorrect password for this private room.' });
                     return;
                 }
@@ -37,8 +40,9 @@ module.exports = (io) => {
             // 2. New Room (Create)
             else if (!roomUsers[room] || roomUsers[room].size === 0) {
                 if (password) {
-                    roomConfigs[room] = { password };
-                    console.log(`Room ${room} created as Private.`);
+                    const hashedPassword = await bcrypt.hash(password, 10);
+                    roomConfigs[room] = { password: hashedPassword };
+                    console.log(`Room ${room} created as Private (Encrypted).`);
                 } else {
                     console.log(`Room ${room} created as Public.`);
                 }
@@ -86,7 +90,15 @@ module.exports = (io) => {
                     .sort({ createdAt: -1 })
                     .limit(50)
                     .sort({ createdAt: 1 });
-                socket.emit('load_history', history);
+
+                // Decrypt messages before sending to client
+                const decryptedHistory = history.map(msg => {
+                    const msgObj = msg.toObject();
+                    msgObj.text = decrypt(msgObj.text);
+                    return msgObj;
+                });
+
+                socket.emit('load_history', decryptedHistory);
             } catch (err) {
                 console.error('Error fetching chat history:', err);
             }
@@ -110,25 +122,32 @@ module.exports = (io) => {
             const { room, nickname, text, userColor } = data;
             const sanitizedText = xss(text);
 
+            // Encrypt text before saving
+            const encryptedText = encrypt(sanitizedText);
+
             const isPrivate = !!(roomConfigs[room] && roomConfigs[room].password);
             const MsgModel = isPrivate ? PrivateMessage : Message;
 
             const newMessage = new MsgModel({
                 nickname,
-                text: sanitizedText,
+                text: encryptedText, // Save encrypted
                 userColor,
                 room
             });
 
-            // Optimistic broadcast - send immediately
-            io.to(room).emit('receive_message', newMessage);
+            // Optimistic broadcast - send decrypted (original) text immediately
+            const messageToEmit = {
+                ...newMessage.toObject(),
+                text: sanitizedText
+            };
+
+            io.to(room).emit('receive_message', messageToEmit);
 
             // Save asynchronously
             try {
                 await newMessage.save();
             } catch (err) {
                 console.error('Error saving message to DB:', err);
-                // Optional: Emit error back to sender?
             }
         });
 
@@ -146,7 +165,6 @@ module.exports = (io) => {
                     roomUsers[room].delete(nickname);
                     // Broadcast updated user list
                     emitRoomUsers(room);
-                    // If room empty, verify if we should delete key (optional, keeping it simple)
                 }
 
                 socket.to(room).emit('receive_message', {
