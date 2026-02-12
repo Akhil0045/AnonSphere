@@ -123,7 +123,14 @@ module.exports = (io) => {
             const sanitizedText = xss(text);
 
             // Encrypt text before saving
-            const encryptedText = encrypt(sanitizedText);
+            let encryptedText;
+            try {
+                encryptedText = encrypt(sanitizedText);
+            } catch (err) {
+                console.error('Encryption failed for message:', err);
+                socket.emit('message_error', { message: 'Failed to encrypt message. Please try again.' });
+                return;
+            }
 
             const isPrivate = !!(roomConfigs[room] && roomConfigs[room].password);
             const MsgModel = isPrivate ? PrivateMessage : Message;

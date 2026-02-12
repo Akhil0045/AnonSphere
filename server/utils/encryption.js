@@ -1,6 +1,18 @@
 const crypto = require('crypto');
 const algorithm = 'aes-256-cbc';
-const key = Buffer.from(process.env.ENCRYPTION_KEY || '', 'hex');
+
+const encryptionKeyRaw = process.env.ENCRYPTION_KEY;
+if (!encryptionKeyRaw) {
+    console.error('CRITICAL ERROR: ENCRYPTION_KEY is missing in .env');
+    process.exit(1);
+}
+
+const key = Buffer.from(encryptionKeyRaw, 'hex');
+if (key.length !== 32) {
+    console.error(`CRITICAL ERROR: ENCRYPTION_KEY must be 32 bytes (64 hex characters). Current length: ${key.length}`);
+    process.exit(1);
+}
+
 const ivLength = 16;
 
 const encrypt = (text) => {
@@ -13,7 +25,7 @@ const encrypt = (text) => {
         return iv.toString('hex') + ':' + encrypted.toString('hex');
     } catch (error) {
         console.error('Encryption error:', error);
-        return text;
+        throw new Error('Encryption failed'); // Fail hard
     }
 };
 
