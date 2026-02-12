@@ -1,9 +1,11 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const helmet = require('helmet');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const corsOptions = require('./config/cors');
 const apiRoutes = require('./routes/api');
@@ -12,7 +14,6 @@ const rateLimiter = require('./middlewares/rateLimiter');
 const sanitizeMiddleware = require('./middlewares/sanitize');
 const errorHandler = require('./middlewares/errorHandler');
 
-dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
