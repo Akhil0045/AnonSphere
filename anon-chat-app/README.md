@@ -54,7 +54,7 @@ Messages are encrypted before they are saved to the database.
     - Create `server/.env`:
       ```env
       PORT=5000
-      MONGO_URI=mongodb://localhost:27017/anonchat
+  
       NODE_ENV=development
       CLIENT_URL=http://localhost:5173
       ENCRYPTION_KEY=your_32_byte_hex_key
