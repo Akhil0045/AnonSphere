@@ -1,5 +1,12 @@
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'https://anon-sphere-five.vercel.app',
+    process.env.CLIENT_URL
+].filter(Boolean);
+
 const corsOptions = {
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
 };
