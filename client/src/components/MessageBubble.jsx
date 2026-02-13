@@ -3,6 +3,7 @@ import { useUser } from '../context/UserContext';
 import DOMPurify from 'dompurify';
 import { format } from 'date-fns';
 import '../styles/Chat.css';
+import UserAvatar from './UserAvatar';
 
 const MessageBubble = ({ message }) => {
     const { user } = useUser();
@@ -11,8 +12,15 @@ const MessageBubble = ({ message }) => {
 
     if (isSystem) {
         return (
-            <div className="flex justify-center my-4">
-                <span className="bg-gray-800 text-gray-400 text-xs py-1 px-3 rounded-full border border-gray-700">
+            <div style={{ display: 'flex', justifyContent: 'center', margin: '1rem 0' }}>
+                <span style={{
+                    backgroundColor: '#1f2937',
+                    color: '#9ca3af',
+                    fontSize: '0.75rem',
+                    padding: '0.25rem 0.75rem',
+                    borderRadius: '9999px',
+                    border: '1px solid #374151'
+                }}>
                     {message.text}
                 </span>
             </div>
@@ -26,12 +34,7 @@ const MessageBubble = ({ message }) => {
     return (
         <div className={`message-wrapper ${isSelf ? 'self' : 'other'}`}>
             {!isSelf && (
-                <div
-                    className="user-avatar-sm"
-                    style={{ backgroundColor: message.userColor }}
-                >
-                    {message.nickname.charAt(0).toUpperCase()}
-                </div>
+                <UserAvatar nickname={message.nickname} size={32} />
             )}
 
             <div className="message-content">

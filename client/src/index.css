@@ -1,26 +1,17 @@
 :root {
   --bg-dark: #0f172a;
-  /* Slate 900 */
   --bg-card: #1e293b;
-  /* Slate 800 */
   --bg-input: #334155;
-  /* Slate 700 */
   --text-primary: #f8fafc;
-  /* Slate 50 */
   --text-secondary: #94a3b8;
-  /* Slate 400 */
   --accent-primary: #3b82f6;
-  /* Blue 500 */
   --accent-secondary: #8b5cf6;
-  /* Violet 500 */
   --accent-hover: #2563eb;
+  --message-self: #3b82f6;
+  --message-other: #334155;
   --danger: #ef4444;
   --success: #22c55e;
-
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.5);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 * {
@@ -30,11 +21,10 @@
 }
 
 body {
-  font-family: var(--font-sans);
+  margin: 0;
+  font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
 }
 
 /* Custom Scrollbar */

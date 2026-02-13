@@ -1,9 +1,19 @@
-import { FaLock, FaGlobe } from 'react-icons/fa';
+import { FaLock, FaGlobe, FaArrowLeft } from 'react-icons/fa';
+import UserAvatar from './UserAvatar';
 
-const Header = ({ room, nickname, color, isPrivate }) => {
+const Header = ({ room, nickname, color, isPrivate, onBack }) => {
     return (
         <div className="chat-header">
             <div className="header-logo">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="back-btn"
+                        title="Back to rooms"
+                    >
+                        <FaArrowLeft />
+                    </button>
+                )}
                 <div className="status-indicator"></div>
                 <h1 className="header-title">AnonSphere</h1>
             </div>
@@ -15,10 +25,7 @@ const Header = ({ room, nickname, color, isPrivate }) => {
                     </span>
                 </div>
                 <div className="user-badge">
-                    <div
-                        className="user-color-dot"
-                        style={{ backgroundColor: color }}
-                    ></div>
+                    <UserAvatar nickname={nickname} size={32} />
                     <span className="user-name">{nickname}</span>
                 </div>
             </div>

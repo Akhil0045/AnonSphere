@@ -1,41 +1,32 @@
 import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useChatContext } from '../context/ChatContext';
-import { FaHashtag, FaPlus, FaSignOutAlt, FaTimes, FaLock } from 'react-icons/fa';
+import { FaHashtag, FaPlus, FaSignOutAlt, FaTimes, FaLock, FaSearch, FaFilter } from 'react-icons/fa';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import SHA256 from 'crypto-js/sha256';
 
-const Sidebar = ({ isOpen, onClose }) => {
+import CreateRoomModal from './CreateRoomModal';
+import RoomAvatar from './RoomAvatar';
+import UserAvatar from './UserAvatar';
+
+const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
     const { user, switchRoom, leaveRoom, joinRoom } = useUser();
     const { joinChatRoom, unreadCounts, onlineUsersByRoom } = useChatContext();
-    const [isJoining, setIsJoining] = useState(false);
-    const [newRoom, setNewRoom] = useState('');
-    const [isPrivate, setIsPrivate] = useState(false);
-    const [password, setPassword] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const handleJoinNewRoom = (e) => {
-        e.preventDefault();
-        if (newRoom.trim()) {
-            if (user.joinedRooms.includes(newRoom)) {
-                toast.error('You are already in this room');
-                return;
-            }
-            if (isPrivate && !password.trim()) {
-                toast.error('Password required');
-                return;
-            }
+    const handleCreateRoom = (roomName, isPrivate, password) => {
+        // Hash password on client side so plain text isn't sent over network
+        const finalPassword = isPrivate ? SHA256(password).toString() : null;
 
-            // Hash password on client side so plain text isn't sent over network
-            const finalPassword = isPrivate ? SHA256(password).toString() : null;
-
-            joinChatRoom(newRoom, user.nickname, finalPassword, user.color);
-            setNewRoom(''); // Reset
-            setIsPrivate(false);
-            setPassword('');
-            setIsJoining(false);
-
+        if (user.joinedRooms.includes(roomName)) {
+            toast.error('You are already in this room');
+            return;
         }
+
+        joinChatRoom(roomName, user.nickname, finalPassword, user.color);
+        setIsCreateModalOpen(false);
     };
 
     const handleLeave = (room, e) => {
@@ -44,70 +35,71 @@ const Sidebar = ({ isOpen, onClose }) => {
         toast.success(`Left ${room}`);
     };
 
+    const handleRoomClick = (room) => {
+        switchRoom(room);
+        if (onRoomSelect) onRoomSelect();
+    }
+
+    const filteredRooms = user.joinedRooms.filter(room =>
+        room.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
         <div className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <h3>Your Rooms</h3>
-                <button
-                    className="add-room-btn"
-                    onClick={() => setIsJoining(!isJoining)}
-                    title="Join new room"
-                >
-                    <FaPlus />
-                </button>
+                <div className="sidebar-actions">
+                    <button
+                        className="add-room-btn"
+                        onClick={() => setIsCreateModalOpen(true)}
+                        title="Create new room"
+                    >
+                        <FaPlus />
+                    </button>
+                </div>
             </div>
 
-            <AnimatePresence>
-                {isJoining && (
-                    <motion.form
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        onSubmit={handleJoinNewRoom}
-                        className="new-room-form"
-                        style={{ flexDirection: 'column', gap: '0.5rem' }}
-                    >
-                        <input
-                            type="text"
-                            value={newRoom}
-                            onChange={(e) => setNewRoom(e.target.value)}
-                            placeholder="Room Name..."
-                            className="new-room-input"
-                            autoFocus
-                        />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            <input
-                                type="checkbox"
-                                id="sbPrivate"
-                                checked={isPrivate}
-                                onChange={(e) => setIsPrivate(e.target.checked)}
-                            />
-                            <label htmlFor="sbPrivate" style={{ cursor: 'pointer' }}>Private</label>
-                        </div>
-                        {isPrivate && (
-                            <input
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Password"
-                                className="new-room-input"
-                                style={{ fontSize: '0.8rem' }}
-                            />
-                        )}
-                        <button type="submit" style={{ display: 'none' }}></button>
-                    </motion.form>
-                )}
-            </AnimatePresence>
+            <div className="search-bar-container" style={{ padding: '16px' }}>
+                <div className="search-input-wrapper" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'var(--bg-card)',
+                    borderRadius: '8px',
+                    padding: '8px 12px',
+                    border: '1px solid rgba(255,255,255,0.05)'
+                }}>
+                    <FaSearch style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }} />
+                    <input
+                        type="text"
+                        placeholder="Search or start a new chat"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--text-primary)',
+                            marginLeft: '0.8rem',
+                            flex: 1,
+                            outline: 'none',
+                            fontSize: '0.9rem'
+                        }}
+                    />
+                    <FaFilter style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer' }} />
+                </div>
+            </div>
 
             <div className="room-list">
-                {user.joinedRooms.map(room => (
+                {filteredRooms.map(room => (
                     <div key={room} className="room-wrapper">
                         <div
                             className={`room-item ${user.activeRoom === room ? 'active' : ''}`}
-                            onClick={() => switchRoom(room)}
+                            onClick={() => handleRoomClick(room)}
                         >
                             <div className="room-name">
-                                {user.roomTypes[room] === 'private' ? <FaLock className="room-icon" style={{ color: '#ef4444' }} /> : <FaHashtag className="room-icon" />}
+                                <RoomAvatar
+                                    roomName={room}
+                                    isPrivate={user.roomTypes[room] === 'private'}
+                                />
                                 <span>{room}</span>
                             </div>
                             <div className="room-actions">
@@ -127,34 +119,24 @@ const Sidebar = ({ isOpen, onClose }) => {
                             </div>
                         </div>
 
-                        <AnimatePresence>
-                            {user.activeRoom === room && onlineUsersByRoom[room] && (
-                                <motion.div
-                                    className="room-users"
-                                    initial={{ height: 0, opacity: 0 }}
-                                    animate={{ height: 'auto', opacity: 1 }}
-                                    exit={{ height: 0, opacity: 0 }}
-                                >
-                                    {onlineUsersByRoom[room].map(nickname => (
-                                        <div key={nickname} className="room-user-item">
-                                            <div className="user-dot"></div>
-                                            <span>{nickname === user.nickname ? 'You' : nickname}</span>
-                                        </div>
-                                    ))}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        {/* Online users list removed as per user request */}
                     </div>
                 ))}
             </div>
 
             <div className="user-profile">
-                <div className="user-avatar" style={{ backgroundColor: user.color }}></div>
+                <UserAvatar nickname={user.nickname} />
                 <div className="user-details">
                     <span className="user-nickname">{user.nickname}</span>
                     <span className="user-status">Online</span>
                 </div>
             </div>
+
+            <CreateRoomModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onCreate={handleCreateRoom}
+            />
         </div>
     );
 };
