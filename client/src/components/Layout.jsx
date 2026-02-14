@@ -51,7 +51,9 @@ const Layout = () => {
                                 Secure, anonymous, real-time messaging for everyone. No logs, no tracking.
                             </p>
                             <div style={{ display: 'flex', gap: '1rem', fontSize: '1.5rem', color: 'var(--text-secondary)' }}>
-                                <FaGithub style={{ cursor: 'pointer' }} />
+                                <a href="https://github.com/Akhil0045/AnonSphere" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit' }}>
+                                    <FaGithub style={{ cursor: 'pointer' }} />
+                                </a>
                                 <FaTwitter style={{ cursor: 'pointer' }} />
                             </div>
                         </div>
@@ -83,8 +85,11 @@ const Layout = () => {
                             </ul>
                         </div>
                     </div>
-                    <div className="copyright">
-                        © 2026 AnonSphere. All rights reserved.
+                    <div className="copyright" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                        <div>© 2026 AnonSphere. All rights reserved.</div>
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                            Made with <span style={{ color: '#ef4444' }}>❤️</span> by <a href="https://github.com/Akhil0045" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-primary)', textDecoration: 'none' }}>Akhil</a>
+                        </div>
                     </div>
                 </div>
             </footer>
