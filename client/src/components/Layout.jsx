@@ -1,27 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { FaGhost, FaGithub, FaTwitter } from 'react-icons/fa';
+import { FaGhost, FaGithub, FaTwitter, FaBars, FaTimes } from 'react-icons/fa';
 import '../styles/Layout.css';
 
 const Layout = () => {
     const location = useLocation();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const isActive = (path) => location.pathname === path ? 'active' : '';
+    const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const closeMenu = () => setIsMobileMenuOpen(false);
 
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <nav className="navbar">
                 <div className="container navbar-content">
-                    <Link to="/" className="logo-container">
+                    <Link to="/" className="logo-container" onClick={closeMenu}>
                         <FaGhost className="text-gradient" />
                         <span className="text-gradient">AnonSphere</span>
                     </Link>
-                    <ul className="nav-links">
-                        <li><Link to="/" className={`nav-link ${isActive('/')}`}>Home</Link></li>
-                        <li><Link to="/about" className={`nav-link ${isActive('/about')}`}>About</Link></li>
-                        <li><Link to="/features" className={`nav-link ${isActive('/features')}`}>Features</Link></li>
+
+                    <div className="mobile-menu-btn" onClick={toggleMenu}>
+                        {isMobileMenuOpen ? <FaTimes /> : <FaBars />}
+                    </div>
+
+                    <ul className={`nav-links ${isMobileMenuOpen ? 'active' : ''}`}>
+                        <li><Link to="/" className={`nav-link ${isActive('/')}`} onClick={closeMenu}>Home</Link></li>
+                        <li><Link to="/about" className={`nav-link ${isActive('/about')}`} onClick={closeMenu}>About</Link></li>
+                        <li><Link to="/features" className={`nav-link ${isActive('/features')}`} onClick={closeMenu}>Features</Link></li>
                         <li>
-                            <Link to="/chat" className="btn-primary" style={{ padding: '0.5rem 1rem' }}>
+                            <Link to="/chat" className="btn-primary" style={{ padding: '0.5rem 1rem' }} onClick={closeMenu}>
                                 Launch App
                             </Link>
                         </li>

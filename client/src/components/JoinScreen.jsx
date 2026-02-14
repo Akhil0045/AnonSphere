@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useChatContext } from '../context/ChatContext';
 import { useSocket } from '../context/SocketContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FaArrowLeft } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import SHA256 from 'crypto-js/sha256';
 import '../styles/JoinScreen.css';
@@ -64,6 +66,9 @@ const JoinScreen = () => {
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.3 }}
         >
+            <Link to="/" className="back-home-btn" title="Back to Home">
+                <FaArrowLeft />
+            </Link>
             <div className="join-card">
                 <h2 className="join-title">
                     Enter <span className="text-gradient">AnonSphere</span>

@@ -1,10 +1,50 @@
 .join-container {
     display: flex;
-    height: 80vh;
-    /* Not full screen to fit in layout */
+    height: 100vh;
+    /* Changed to 100vh for full screen */
+    width: 100vw;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    position: relative;
+    /* Added for absolute positioning of back button */
+    background: var(--bg-dark);
+    /* Ensure background covers whole screen */
+}
+
+.back-home-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 100;
+}
+
+.back-home-btn:hover {
+    background: var(--accent-primary);
+    color: white;
+    transform: translateX(-3px);
+}
+
+/* Mobile adjustments for back button */
+@media (max-width: 640px) {
+    .back-home-btn {
+        top: 1rem;
+        left: 1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
 }
 
 .join-card {
