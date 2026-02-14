@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { FaPaperPlane } from 'react-icons/fa';
 import { useUser } from '../context/UserContext';
 import useChat from '../hooks/useChat';
 import useAutoScroll from '../hooks/useAutoScroll';
@@ -15,6 +16,10 @@ const ChatRoom = () => {
     const { messages, sendMessage, sendTyping, typingUsers } = useChat();
     const [inputText, setInputText] = useState('');
     const scrollRef = useAutoScroll(messages);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+    // Toggle sidebar for mobile
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     const handleSend = (e) => {
         e.preventDefault();
@@ -38,10 +43,16 @@ const ChatRoom = () => {
     const renderChatArea = () => {
         if (!user.activeRoom) {
             return (
-                <div className="flex-1 flex items-center justify-center text-gray-400 bg-gray-900">
-                    <div className="text-center">
-                        <h2 className="text-2xl font-bold mb-2">Welcome, {user.nickname}</h2>
-                        <p>Select a room from the sidebar or creat a new one to start chatting.</p>
+                <div className="chat-main" style={{ alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                    <div className="text-center p-4">
+                        <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Welcome, {user.nickname}</h2>
+                        <p>Select a room from the sidebar or create a new one to start chatting.</p>
+                        <button
+                            className="open-sidebar-btn"
+                            onClick={() => setIsSidebarOpen(true)}
+                        >
+                            Open Room List
+                        </button>
                     </div>
                 </div>
             );
@@ -50,7 +61,7 @@ const ChatRoom = () => {
         return (
             <motion.div
                 key={user.activeRoom}
-                className="chat-container flex-1"
+                className="chat-main"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.2 }}
@@ -60,6 +71,7 @@ const ChatRoom = () => {
                     nickname={user.nickname}
                     color={user.color}
                     isPrivate={user.roomTypes[user.activeRoom] === 'private'}
+                    onBack={() => setIsSidebarOpen(true)}
                 />
 
                 <div className="chat-messages">
@@ -95,7 +107,7 @@ const ChatRoom = () => {
                             type="submit"
                             className="send-btn"
                         >
-                            Send
+                            <FaPaperPlane />
                         </motion.button>
                     </form>
                 </div>
@@ -103,9 +115,19 @@ const ChatRoom = () => {
         );
     };
 
+    // Close sidebar when room selected on mobile
+    const handleRoomSelect = () => {
+        if (window.innerWidth < 768) {
+            setIsSidebarOpen(false);
+        }
+    };
+
     return (
-        <div className="flex h-screen overflow-hidden bg-gray-900">
-            <Sidebar isOpen={true} />
+        <div className={`chat-layout ${isSidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>
+            <Sidebar
+                isOpen={isSidebarOpen}
+                onRoomSelect={handleRoomSelect}
+            />
             {renderChatArea()}
         </div>
     );

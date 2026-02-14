@@ -10,11 +10,14 @@ import CreateRoomModal from './CreateRoomModal';
 import RoomAvatar from './RoomAvatar';
 import UserAvatar from './UserAvatar';
 
+import ConfirmationModal from './ConfirmationModal';
+
 const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
     const { user, switchRoom, leaveRoom, joinRoom } = useUser();
     const { joinChatRoom, unreadCounts, onlineUsersByRoom } = useChatContext();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [roomToLeave, setRoomToLeave] = useState(null);
 
     const handleCreateRoom = (roomName, isPrivate, password) => {
         // Hash password on client side so plain text isn't sent over network
@@ -29,10 +32,17 @@ const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
         setIsCreateModalOpen(false);
     };
 
-    const handleLeave = (room, e) => {
+    const initiateLeave = (room, e) => {
         e.stopPropagation();
-        leaveRoom(room);
-        toast.success(`Left ${room}`);
+        setRoomToLeave(room);
+    };
+
+    const confirmLeave = () => {
+        if (roomToLeave) {
+            leaveRoom(roomToLeave);
+            toast.success(`Left ${roomToLeave}`);
+            setRoomToLeave(null);
+        }
     };
 
     const handleRoomClick = (room) => {
@@ -59,32 +69,17 @@ const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
                 </div>
             </div>
 
-            <div className="search-bar-container" style={{ padding: '16px' }}>
-                <div className="search-input-wrapper" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    background: 'var(--bg-card)',
-                    borderRadius: '8px',
-                    padding: '8px 12px',
-                    border: '1px solid rgba(255,255,255,0.05)'
-                }}>
-                    <FaSearch style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }} />
+            <div className="search-bar-container">
+                <div className="search-input-wrapper">
+                    <FaSearch className="search-icon" />
                     <input
                         type="text"
                         placeholder="Search or start a new chat"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        style={{
-                            background: 'transparent',
-                            border: 'none',
-                            color: 'var(--text-primary)',
-                            marginLeft: '0.8rem',
-                            flex: 1,
-                            outline: 'none',
-                            fontSize: '0.9rem'
-                        }}
+                        className="search-input"
                     />
-                    <FaFilter style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer' }} />
+                    <FaFilter className="filter-icon" />
                 </div>
             </div>
 
@@ -111,7 +106,7 @@ const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
                                 )}
                                 <button
                                     className="leave-btn"
-                                    onClick={(e) => handleLeave(room, e)}
+                                    onClick={(e) => initiateLeave(room, e)}
                                     title="Leave room"
                                 >
                                     <FaTimes />
@@ -136,6 +131,17 @@ const Sidebar = ({ isOpen, onClose, onRoomSelect }) => {
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
                 onCreate={handleCreateRoom}
+            />
+
+            <ConfirmationModal
+                isOpen={!!roomToLeave}
+                onClose={() => setRoomToLeave(null)}
+                onConfirm={confirmLeave}
+                title="Leave Room"
+                message={`Are you sure you want to leave ${roomToLeave}?`}
+                confirmText="Leave"
+                cancelText="Stay"
+                isDanger={true}
             />
         </div>
     );
